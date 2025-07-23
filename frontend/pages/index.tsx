@@ -1,7 +1,8 @@
 // frontend/pages/index.tsx
 import Head from 'next/head';
-import { useState, FormEvent, useEffect } from 'react';
-import { useRouter } from 'next/router'; // Importa o useRouter para redirecionamento
+import { useState, FormEvent, useEffect, useCallback } from 'react'; // Importa useCallback
+import { useRouter } from 'next/router';
+import Link from 'next/link'; // Importa o componente Link
 
 // Interface para tipar os flashcards
 interface Flashcard {
@@ -13,7 +14,7 @@ interface Flashcard {
 }
 
 export default function Home() {
-  const router = useRouter(); // Instancia o roteador
+  const router = useRouter();
   const [textInput, setTextInput] = useState<string>('');
   const [generatedFlashcards, setGeneratedFlashcards] = useState<Flashcard[]>([]);
   const [savedFlashcards, setSavedFlashcards] = useState<Flashcard[]>([]);
@@ -22,41 +23,27 @@ export default function Home() {
   const [isLoadingFetch, setIsLoadingFetch] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false); // Novo estado para status de login
-  const [authToken, setAuthToken] = useState<string | null>(null); // Novo estado para o token JWT
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [authToken, setAuthToken] = useState<string | null>(null);
 
-  // NOVO: useEffect para verificar o token no localStorage e carregar flashcards salvos
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      setIsLoggedIn(true);
-      setAuthToken(token);
-      fetchSavedFlashcards(token); // Chama a função para buscar flashcards com o token
-    } else {
-      setIsLoggedIn(false);
-      // Opcional: Redirecionar para login se não estiver logado
-      // router.push('/login');
-    }
-  }, []); // Roda apenas uma vez no mount
-
-  const fetchSavedFlashcards = async (token: string) => {
+  // Função para buscar flashcards salvos, agora envolvida em useCallback
+  const fetchSavedFlashcards = useCallback(async (token: string) => {
     setIsLoadingFetch(true);
     setError(null);
     try {
       const response = await fetch('http://localhost:5000/api/flashcards', {
         headers: {
-          'Authorization': `Bearer ${token}` // Inclui o token no cabeçalho
+          'Authorization': `Bearer ${token}`
         }
       });
       if (!response.ok) {
-        // Se a resposta não for 2xx (e for 401/403), o token pode estar inválido
-        if (response.status === 401 || response.status === 403) {
-            localStorage.removeItem('token'); // Limpa o token inválido
-            localStorage.removeItem('userId');
-            setIsLoggedIn(false);
-            router.push('/login'); // Redireciona para login
-            throw new Error('Sessão expirada ou inválida. Por favor, faça login novamente.');
-        }
+          if (response.status === 401 || response.status === 403) {
+              localStorage.removeItem('token');
+              localStorage.removeItem('userId');
+              setIsLoggedIn(false);
+              router.push('/login');
+              throw new Error('Sessão expirada ou inválida. Por favor, faça login novamente.');
+          }
         throw new Error('Falha ao carregar flashcards salvos.');
       }
       const data: Flashcard[] = await response.json();
@@ -72,7 +59,19 @@ export default function Home() {
     } finally {
       setIsLoadingFetch(false);
     }
-  };
+  }, [router]); // router é uma dependência de useCallback
+
+  // useEffect para verificar o token no localStorage e carregar flashcards salvos
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsLoggedIn(true);
+      setAuthToken(token);
+      fetchSavedFlashcards(token); // Chama a função para buscar flashcards com o token
+    } else {
+      setIsLoggedIn(false);
+    }
+  }, [fetchSavedFlashcards]); // fetchSavedFlashcards agora é uma dependência
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -97,7 +96,7 @@ export default function Home() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}` // Inclui o token
+          'Authorization': `Bearer ${authToken}`
         },
         body: JSON.stringify({ text: textInput }),
       });
@@ -114,7 +113,7 @@ export default function Home() {
         isFlipped: false
       }));
       setGeneratedFlashcards(flashcardsWithIds);
-    } catch (err: unknown) {
+    } catch (err: unknown) { // Tipo 'unknown' para erros
       console.error("Erro ao gerar flashcards:", err);
       let errorMessage = 'Ocorreu um erro desconhecido ao gerar.';
       if (err instanceof Error) {
@@ -146,7 +145,7 @@ export default function Home() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}` // Inclui o token
+          'Authorization': `Bearer ${authToken}`
         },
         body: JSON.stringify({ flashcards: generatedFlashcards }),
       });
@@ -158,10 +157,9 @@ export default function Home() {
 
       setSuccessMessage('Flashcard(s) salvo(s) com sucesso!');
       setGeneratedFlashcards([]);
-      // Recarregar os flashcards salvos para ver os novos na lista
-      fetchSavedFlashcards(authToken); // Chama para atualizar a lista de salvos
+      fetchSavedFlashcards(authToken);
 
-    } catch (err: unknown) {
+    } catch (err: unknown) { // Tipo 'unknown' para erros
       console.error("Erro ao salvar flashcards:", err);
       let errorMessage = 'Ocorreu um erro desconhecido ao salvar.';
       if (err instanceof Error) {
@@ -173,7 +171,6 @@ export default function Home() {
     }
   };
 
-
   const handleFlip = (id: string, type: 'generated' | 'saved') => {
     if (type === 'generated') {
       setGeneratedFlashcards(prevCards =>
@@ -181,7 +178,7 @@ export default function Home() {
           card.id === id ? { ...card, isFlipped: !card.isFlipped } : card
         )
       );
-    } else { // type === 'saved'
+    } else {
       setSavedFlashcards(prevCards =>
         prevCards.map(card =>
           card.id === id ? { ...card, isFlipped: !card.isFlipped } : card
@@ -198,16 +195,15 @@ export default function Home() {
 
     if (type === 'generated') {
       setGeneratedFlashcards(prevCards => prevCards.filter(card => card.id !== id));
-    } else { // type === 'saved'
+    } else {
       try {
         const response = await fetch(`http://localhost:5000/api/flashcards/${id}`, {
           method: 'DELETE',
           headers: {
-            'Authorization': `Bearer ${authToken}` // Inclui o token
+            'Authorization': `Bearer ${authToken}`
           }
         });
         if (!response.ok) {
-          // Se a resposta for 401/403, o token pode estar inválido
             if (response.status === 401 || response.status === 403) {
                 localStorage.removeItem('token');
                 localStorage.removeItem('userId');
@@ -219,7 +215,7 @@ export default function Home() {
         }
         setSavedFlashcards(prevCards => prevCards.filter(card => card.id !== id));
         setSuccessMessage('Flashcard deletado do banco com sucesso!');
-      } catch (err: unknown) {
+      } catch (err: unknown) { // Tipo 'unknown' para erros
         console.error("Erro ao deletar flashcard do banco:", err);
         let errorMessage = 'Ocorreu um erro ao deletar do banco.';
         if (err instanceof Error) {
@@ -235,11 +231,11 @@ export default function Home() {
     localStorage.removeItem('userId');
     setIsLoggedIn(false);
     setAuthToken(null);
-    setSavedFlashcards([]); // Limpa flashcards salvos ao deslogar
-    setGeneratedFlashcards([]); // Limpa flashcards gerados
+    setSavedFlashcards([]);
+    setGeneratedFlashcards([]);
     setSuccessMessage('Você foi desconectado.');
     setError(null);
-    router.push('/login'); // Redireciona para a página de login
+    router.push('/login');
   };
 
   return (
@@ -248,7 +244,7 @@ export default function Home() {
         <title>Assistente de Estudo Inteligente</title>
         <meta name="description" content="Gere flashcards de forma inteligente com IA" />
         <link rel="icon" href="/favicon.ico" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        {/* Removido o link para Google Fonts daqui, ele agora está em _document.tsx */}
       </Head>
 
       <main className="container">
@@ -279,7 +275,7 @@ export default function Home() {
 
         {!isLoggedIn && (
             <div className="error-message" style={{backgroundColor: '#fff3cd', borderColor: '#ffeeba', color: '#856404'}}>
-                <p>Você precisa <a href="/login" style={{color: '#007bff', fontWeight: 'bold'}}>fazer login</a> ou <a href="/register" style={{color: '#007bff', fontWeight: 'bold'}}>registrar-se</a> para usar o assistente.</p>
+                <p>Você precisa <Link href="/login"><a>fazer login</a></Link> ou <Link href="/register"><a>registrar-se</a></Link> para usar o assistente.</p>
             </div>
         )}
 

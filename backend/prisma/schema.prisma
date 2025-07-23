@@ -1,0 +1,31 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Modelo de Usuário
+model User {
+  id        String     @id @default(uuid())
+  email     String     @unique // O email deve ser único para cada usuário
+  password  String     // Armazenará o hash da senha
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  flashcards Flashcard[] // Um usuário pode ter muitos flashcards (relacionamento one-to-many)
+}
+
+// Definição do modelo Flashcard
+model Flashcard {
+  id        String   @id @default(uuid())
+  pergunta  String
+  resposta  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String   // Campo para armazenar o ID do usuário ao qual o flashcard pertence
+  user      User     @relation(fields: [userId], references: [id]) // Define o relacionamento
+}

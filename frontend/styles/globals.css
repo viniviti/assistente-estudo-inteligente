@@ -1,0 +1,358 @@
+/* frontend/styles/globals.css */
+
+/* Reset básico */
+body {
+  margin: 0;
+  font-family: "Inter", sans-serif; /* Usando uma fonte mais moderna, você pode importá-la do Google Fonts */
+  background-color: #f8fafc; /* Cor de fundo suave */
+  color: #334155; /* Cor de texto padrão */
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased; /* Para melhor renderização de fontes */
+  display: flex; /* Para centralizar o conteúdo principal */
+  justify-content: center;
+  align-items: flex-start; /* Alinha no topo, não no centro da tela */
+  min-height: 100vh; /* Garante que o body ocupa a altura total da viewport */
+  padding: 20px; /* Adiciona um padding geral */
+  box-sizing: border-box; /* Garante que padding e border não aumentem a largura/altura */
+}
+
+/* Base para a animação 3D */
+/* O container principal precisa de perspectiva */
+#root,
+body,
+html,
+.main-wrapper {
+  /* Certifique-se que um destes é o pai direto do .container */
+  perspective: 1000px; /* Distância de visualização para a animação 3D */
+}
+
+/* Layout principal da aplicação */
+.container {
+  max-width: 800px;
+  width: 100%;
+  margin: 20px auto; /* Centraliza e adiciona margem superior/inferior */
+  padding: 30px 40px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  box-sizing: border-box;
+}
+
+/* Títulos */
+h1 {
+  font-size: 2.8em;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 25px;
+  color: #1e293b;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: 2em;
+  font-weight: 600;
+  text-align: center;
+  margin-top: 40px;
+  margin-bottom: 25px;
+  color: #1e293b;
+}
+
+h3 {
+  font-size: 1.2em;
+  font-weight: 600;
+  color: #3b82f6; /* Cor primária */
+  margin-bottom: 8px;
+}
+
+p {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #475569;
+  font-size: 1.1em;
+}
+
+/* Formulário */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+textarea {
+  width: 100%;
+  padding: 18px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 1em;
+  min-height: 200px;
+  resize: vertical;
+  color: #334155;
+  background-color: #f8fafc;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+textarea::placeholder {
+  color: #94a3b8;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+button[type="submit"] {
+  padding: 15px 25px;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #3b82f6; /* Cor primária do botão */
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+}
+
+button[type="submit"]:hover:not(:disabled) {
+  background-color: #2563eb;
+  transform: translateY(-2px);
+}
+
+button[type="submit"]:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Mensagens de feedback */
+.error-message {
+  background-color: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #ef4444;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 25px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.success-message {
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 25px;
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Layout dos Flashcards */
+.flashcards-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(300px, 1fr)
+  ); /* Responsivo por padrão */
+  gap: 25px;
+  margin-top: 40px;
+}
+
+/* Estilo do Flashcard Individual com Animação Flip */
+.flashcard-item-container {
+  height: 180px; /* Altura fixa para os cards, ajuste conforme necessidade */
+  position: relative;
+  /* Adiciona a transformação para que os filhos herdem o estilo 3D */
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); /* Animação de flip */
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+/* Quando o card está virado */
+.flashcard-item-container.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.flashcard-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden; /* Esconde a face de trás */
+  backface-visibility: hidden; /* Esconde a face de trás */
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centraliza verticalmente */
+  align-items: center; /* Centraliza horizontalmente */
+  text-align: center;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+}
+
+.flashcard-front {
+  background-color: #ffffff;
+  color: #1e293b;
+  z-index: 2; /* Garante que a frente esteja por cima */
+}
+
+.flashcard-back {
+  background-color: #f0f9ff; /* Cor suave para o verso */
+  color: #1e293b;
+  transform: rotateY(180deg); /* O verso começa rotacionado */
+  border: 1px solid #93c5fd;
+}
+
+.flashcard-face h3 {
+  margin-bottom: 10px;
+  font-size: 1.4em;
+  color: #3b82f6;
+}
+
+.flashcard-face p {
+  margin-bottom: 0;
+  font-size: 1.1em;
+  color: #334155;
+  text-align: center; /* Garante que o texto esteja centralizado */
+}
+
+/* Botão de Excluir individual */
+.delete-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.6em; /* Tamanho maior para o X */
+  color: #94a3b8; /* Cor neutra */
+  transition: color 0.2s ease;
+  z-index: 3; /* Garante que o botão esteja sempre visível acima do card */
+}
+
+.delete-button:hover {
+  color: #ef4444; /* Cor vermelha ao passar o mouse */
+}
+
+/* Rodapé */
+footer {
+  text-align: center;
+  margin-top: 50px;
+  color: #64748b;
+  font-size: 0.9em;
+}
+
+/* Estilos para containers de autenticação */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f8fafc;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.auth-card {
+  background-color: #ffffff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e2e8f0;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+
+.auth-card h1 {
+  font-size: 2.2em;
+  margin-bottom: 25px;
+  color: #1e293b;
+}
+
+.auth-card form {
+  gap: 15px;
+}
+
+.auth-card input[type="email"],
+.auth-card input[type="password"] {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 1em;
+  color: #334155;
+  background-color: #f8fafc;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-card input[type="email"]:focus,
+.auth-card input[type="password"]:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.auth-card button[type="submit"] {
+  width: 100%;
+  padding: 12px 20px;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #3b82f6;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+}
+
+.auth-card button[type="submit"]:hover:not(:disabled) {
+  background-color: #2563eb;
+  transform: translateY(-2px);
+}
+
+.auth-card button[type="submit"]:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.auth-link {
+  margin-top: 20px;
+  color: #64748b;
+  font-size: 0.95em;
+}
+
+.auth-link a {
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.auth-link a:hover {
+  text-decoration: underline;
+}
+
+/* Responsividade */
+@media (max-width: 640px) {
+  .container {
+    padding: 20px;
+  }
+  h1 {
+    font-size: 2em;
+  }
+  h2 {
+    font-size: 1.6em;
+  }
+  p {
+    font-size: 1em;
+  }
+  .flashcards-grid {
+    grid-template-columns: 1fr; /* Força coluna única em telas pequenas */
+  }
+}

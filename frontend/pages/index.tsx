@@ -31,7 +31,7 @@ export default function Home() {
     setIsLoadingFetch(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:5000/api/flashcards', {
+      const response = await fetch('https://assistente-estudo-inteligente-backend.onrender.com/api/flashcards', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -92,7 +92,7 @@ export default function Home() {
     setGeneratedFlashcards([]);
 
     try {
-      const response = await fetch('http://localhost:5000/api/generate-flashcards', {
+      const response = await fetch('https://assistente-estudo-inteligente-backend.onrender.com/api/generate-flashcards', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -141,7 +141,7 @@ export default function Home() {
     setSuccessMessage(null);
 
     try {
-      const response = await fetch('http://localhost:5000/api/flashcards', {
+      const response = await fetch('https://assistente-estudo-inteligente-backend.onrender.com/api/flashcards', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -197,7 +197,7 @@ export default function Home() {
       setGeneratedFlashcards(prevCards => prevCards.filter(card => card.id !== id));
     } else {
       try {
-        const response = await fetch(`http://localhost:5000/api/flashcards/${id}`, {
+        const response = await fetch(`https://assistente-estudo-inteligente-backend.onrender.com/api/flashcards/${id}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${authToken}`
